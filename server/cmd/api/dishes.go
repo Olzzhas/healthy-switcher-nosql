@@ -1,30 +1,49 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"server/internal/data/dish"
-	"time"
+	dishDb "server/internal/data/dish/db"
 )
 
 func (app *application) showDishHandler(w http.ResponseWriter, r *http.Request) {
-	id, err := app.readIDParam(r)
-	if err != nil {
-		app.notFoundResponse(w, r)
-		return
-	}
+	input_id := "63f3beb8e9053d73256db2c0"
 
-	fmt.Print(id)
+	storage := dishDb.NewStorage(app.mongoClient, "dishes")
 
-	dish := dish.Dish{
-		CreatedAt:   time.Now(),
-		Title:       "Plov",
-		Description: "Vkusno",
-		Rating:      4,
-	}
+	dishRes, err := storage.FindOne(context.Background(), input_id)
 
-	err = app.writeJSON(w, http.StatusOK, envelope{"dish": dish}, nil)
+	err = app.writeJSON(w, http.StatusOK, envelope{"dish": dishRes}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 	}
+}
+
+func (app *application) createDishHandler(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		Title       string `json:"title"`
+		Description string `json:"description"`
+	}
+
+	err := app.readJSON(w, r, &input)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	dish := dish.Dish{
+		Title:       input.Title,
+		Description: input.Description,
+	}
+
+	storage := dishDb.NewStorage(app.mongoClient, "dishes")
+
+	dishRes, err := storage.Create(context.Background(), dish)
+
+	fmt.Print(dishRes)
+
+	fmt.Fprintf(w, "%+v\n", input)
+
 }

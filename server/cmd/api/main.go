@@ -4,12 +4,11 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"go.mongodb.org/mongo-driver/mongo"
 	"log"
 	"net/http"
 	"os"
 	mongodb "server/internal/client"
-	"server/internal/data/user"
-	"server/internal/data/user/db"
 	"time"
 )
 
@@ -21,8 +20,9 @@ type config struct {
 }
 
 type application struct {
-	config config
-	logger *log.Logger
+	config      config
+	logger      *log.Logger
+	mongoClient *mongo.Database
 }
 
 func main() {
@@ -34,9 +34,15 @@ func main() {
 
 	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
 
+	mongoDBClient, err := mongodb.NewClient(context.Background(), "user-service")
+	if err != nil {
+		panic(err)
+	}
+
 	app := &application{
-		config: cfg,
-		logger: logger,
+		config:      cfg,
+		logger:      logger,
+		mongoClient: mongoDBClient,
 	}
 
 	srv := &http.Server{
@@ -46,26 +52,6 @@ func main() {
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
 	}
-
-	mongoDBClient, err := mongodb.NewClient(context.Background(), "user-service")
-	if err != nil {
-		panic(err)
-	}
-	storage := db.NewStorage(mongoDBClient, "users")
-
-	user1 := user.User{
-
-		Email:    "olzhasayato@gmail.com",
-		Name:     "Olzhas",
-		Password: "Test",
-	}
-
-	user1ID, err := storage.Create(context.Background(), user1)
-	if err != nil {
-		panic(err)
-	}
-
-	fmt.Println(user1ID)
 
 	logger.Printf("starting %s server on %s", cfg.env, srv.Addr)
 	err = srv.ListenAndServe()
