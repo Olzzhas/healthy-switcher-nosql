@@ -1,6 +1,10 @@
 package dish
 
-import "time"
+import (
+	"server/internal/data/user"
+	"server/internal/validator"
+	"time"
+)
 
 type Dish struct {
 	ID          string    `json:"id" bson:"_id,omitempty"`
@@ -12,8 +16,16 @@ type Dish struct {
 }
 
 type Comment struct {
-	ID string `json:"id" bson:"_id,omitempty"`
-	//User User
-	CommentBody string `json:"comment_body" bson:"comment_body"`
-	Rating      int64  `json:"rating" bson:"rating"`
+	ID          string    `json:"id" bson:"_id,omitempty"`
+	User        user.User `json:"user",bson:"user"`
+	CommentBody string    `json:"comment_body" bson:"comment_body"`
+	Rating      int64     `json:"rating" bson:"rating"`
+}
+
+func ValidateDish(v *validator.Validator, dish *Dish) {
+	v.Check(dish.Title != "", "title", "title cannot be empty")
+	v.Check(len(dish.Title) <= 128, "title", "must not be more than 128 bytes long")
+
+	v.Check(dish.Description != "", "description", "description cannot be empty")
+	v.Check(len(dish.Description) <= 4096, "description", "must not be more than 128 bytes long")
 }

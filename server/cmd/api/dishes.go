@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"server/internal/data/dish"
 	dishDb "server/internal/data/dish/db"
+	"server/internal/validator"
 )
 
 func (app *application) showDishHandler(w http.ResponseWriter, r *http.Request) {
@@ -33,17 +34,22 @@ func (app *application) createDishHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	dish := dish.Dish{
+	item := &dish.Dish{
 		Title:       input.Title,
 		Description: input.Description,
 	}
 
+	v := validator.New()
+
+	if dish.ValidateDish(v, item); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
 	storage := dishDb.NewStorage(app.mongoClient, "dishes")
 
-	dishRes, err := storage.Create(context.Background(), dish)
+	dishRes, err := storage.Create(context.Background(), item)
 
-	fmt.Print(dishRes)
-
-	fmt.Fprintf(w, "%+v\n", input)
+	fmt.Fprintf(w, dishRes)
 
 }

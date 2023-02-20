@@ -20,6 +20,7 @@ func (app *application) routes() *httprouter.Router {
 	router.HandlerFunc(http.MethodPost, "/api/dish", app.createDishHandler)
 
 	//user
+	router.HandlerFunc(http.MethodPost, "/api/user", app.registerUserHandler)
 
 	return router
 }

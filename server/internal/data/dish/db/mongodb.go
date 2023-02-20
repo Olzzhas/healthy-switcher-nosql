@@ -1,4 +1,4 @@
-package db
+package dish
 
 import (
 	"context"
@@ -16,7 +16,7 @@ type db struct {
 	logger     *log.Logger
 }
 
-func (d *db) Create(ctx context.Context, dish dish.Dish) (string, error) {
+func (d *db) Create(ctx context.Context, dish *dish.Dish) (string, error) {
 	result, err := d.collection.InsertOne(ctx, dish)
 	if err != nil {
 		return "", fmt.Errorf("failed to create user due to error: %v", err)
