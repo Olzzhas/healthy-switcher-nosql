@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"os"
 	mongodb "server/internal/client"
-	"server/internal/user"
-	"server/internal/user/db"
+	"server/internal/data/user"
+	"server/internal/data/user/db"
 	"time"
 )
 

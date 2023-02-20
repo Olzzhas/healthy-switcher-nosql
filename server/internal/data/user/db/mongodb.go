@@ -8,7 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"log"
-	"server/internal/user"
+	user2 "server/internal/data/user"
 )
 
 type db struct {
@@ -16,7 +16,7 @@ type db struct {
 	logger     *log.Logger
 }
 
-func (d *db) Create(ctx context.Context, user user.User) (string, error) {
+func (d *db) Create(ctx context.Context, user user2.User) (string, error) {
 	result, err := d.collection.InsertOne(ctx, user)
 	if err != nil {
 		return "", fmt.Errorf("failed to create user due to error: %v", err)
@@ -30,7 +30,7 @@ func (d *db) Create(ctx context.Context, user user.User) (string, error) {
 	return "", fmt.Errorf("failed to convert objectid to hex. probably oid: %s", oid)
 }
 
-func (d *db) FindOne(ctx context.Context, id string) (u user.User, err error) {
+func (d *db) FindOne(ctx context.Context, id string) (u user2.User, err error) {
 	oid, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return u, fmt.Errorf("failed to convert hex to objectid. hex: %s", id)
@@ -55,7 +55,7 @@ func (d *db) FindOne(ctx context.Context, id string) (u user.User, err error) {
 	return u, nil
 }
 
-func (d *db) Update(ctx context.Context, user user.User) error {
+func (d *db) Update(ctx context.Context, user user2.User) error {
 	objectID, err := primitive.ObjectIDFromHex(user.ID)
 	if err != nil {
 		return fmt.Errorf("failed to convert user ID to ObjectID. Id=%s", user.ID)
@@ -117,7 +117,7 @@ func (d *db) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
-func NewStorage(database *mongo.Database, collection string) user.Storage {
+func NewStorage(database *mongo.Database, collection string) user2.Storage {
 
 	return &db{
 		collection: database.Collection(collection),
