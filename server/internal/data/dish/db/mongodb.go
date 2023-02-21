@@ -19,7 +19,7 @@ type db struct {
 func (d *db) Create(ctx context.Context, dish *dish.Dish) (string, error) {
 	result, err := d.collection.InsertOne(ctx, dish)
 	if err != nil {
-		return "", fmt.Errorf("failed to create user due to error: %v", err)
+		return "", fmt.Errorf("failed to create dish due to error: %v", err)
 	}
 
 	oid, ok := result.InsertedID.(primitive.ObjectID)
@@ -45,11 +45,11 @@ func (d *db) FindOne(ctx context.Context, id string) (dish dish.Dish, err error)
 			//TODO ErrEntityNotFound
 			return dish, fmt.Errorf("ErrEntityNotFound")
 		}
-		return dish, fmt.Errorf("failed to find one user by id: %s due to error: %v", id, err)
+		return dish, fmt.Errorf("failed to find one dish by id: %s due to error: %v", id, err)
 	}
 
 	if err = result.Decode(&dish); err != nil {
-		return dish, fmt.Errorf("failed to decode user(id: %s) from db due to error: %v", id, err)
+		return dish, fmt.Errorf("failed to decode dish(id: %s) from db due to error: %v", id, err)
 	}
 
 	return dish, nil
@@ -58,31 +58,31 @@ func (d *db) FindOne(ctx context.Context, id string) (dish dish.Dish, err error)
 func (d *db) Update(ctx context.Context, dish dish.Dish) error {
 	objectID, err := primitive.ObjectIDFromHex(dish.ID)
 	if err != nil {
-		return fmt.Errorf("failed to convert user ID to ObjectID. Id=%s", dish.ID)
+		return fmt.Errorf("failed to convert dish ID to ObjectID. Id=%s", dish.ID)
 	}
 
 	filter := bson.M{"_id": objectID}
 
-	userBytes, err := bson.Marshal(dish)
+	dishBytes, err := bson.Marshal(dish)
 	if err != nil {
-		return fmt.Errorf("failed to marshal user. error: %v", err)
+		return fmt.Errorf("failed to marshal dish. error: %v", err)
 	}
 
-	var updateUserObj bson.M
-	err = bson.Unmarshal(userBytes, &updateUserObj)
+	var updateDishObj bson.M
+	err = bson.Unmarshal(dishBytes, &updateDishObj)
 	if err != nil {
-		return fmt.Errorf("failed to unmarshal userbytes: %v", err)
+		return fmt.Errorf("failed to unmarshal dishbytes: %v", err)
 	}
 
-	delete(updateUserObj, "_id")
+	delete(updateDishObj, "_id")
 
 	update := bson.M{
-		"$set": updateUserObj,
+		"$set": updateDishObj,
 	}
 
 	result, err := d.collection.UpdateOne(ctx, filter, update)
 	if err != nil {
-		return fmt.Errorf("failed to execute update user query. error: %v", err)
+		return fmt.Errorf("failed to execute update dish query. error: %v", err)
 	}
 
 	if result.MatchedCount == 0 {
@@ -98,7 +98,7 @@ func (d *db) Update(ctx context.Context, dish dish.Dish) error {
 func (d *db) Delete(ctx context.Context, id string) error {
 	objectID, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
-		return fmt.Errorf("failed to convert user ID to ObjectID. ID=%s", id)
+		return fmt.Errorf("failed to convert dish ID to ObjectID. ID=%s", id)
 	}
 
 	filter := bson.M{"_id": objectID}
@@ -113,6 +113,59 @@ func (d *db) Delete(ctx context.Context, id string) error {
 	}
 
 	fmt.Printf("Deleted %d documents", result.DeletedCount)
+
+	return nil
+}
+
+func (d *db) FindAll(ctx context.Context) (dish []dish.Dish, err error) {
+	cursor, err := d.collection.Find(ctx, bson.M{})
+
+	if cursor.Err() != nil {
+		return dish, fmt.Errorf("failed to find dishes due to error: %v", err)
+	}
+
+	if err = cursor.All(ctx, &dish); err != nil {
+		return dish, fmt.Errorf("failed to read all documents from cursor due to error: %v", err)
+	}
+
+	return dish, nil
+
+}
+
+func (d *db) CreateComment(ctx context.Context, dish dish.Dish, comment dish.Comment) error {
+	objectID, err := primitive.ObjectIDFromHex(dish.ID)
+	if err != nil {
+		return fmt.Errorf("failed to convert dish ID to ObjectID. Id=%s", dish.ID)
+	}
+
+	filter := bson.M{"_id": objectID}
+
+	dishBytes, err := bson.Marshal(dish)
+	if err != nil {
+		return fmt.Errorf("failed to marshal dish. error: %v", err)
+	}
+
+	var updateDishObj bson.M
+	err = bson.Unmarshal(dishBytes, &updateDishObj)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal dishbytes: %v", err)
+	}
+
+	delete(updateDishObj, "_id")
+
+	update := bson.D{{"$push", bson.D{{"comments", comment}}}}
+
+	result, err := d.collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return fmt.Errorf("failed to execute update dish query. error: %v", err)
+	}
+
+	if result.MatchedCount == 0 {
+		//TODO ErrEntityNotFound
+		return fmt.Errorf("not found")
+	}
+
+	fmt.Printf("Matched %d documents and Modified %d documents", result.MatchedCount, result.ModifiedCount)
 
 	return nil
 }

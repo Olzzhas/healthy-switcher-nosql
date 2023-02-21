@@ -18,9 +18,16 @@ func (app *application) routes() *httprouter.Router {
 	//dish
 	router.HandlerFunc(http.MethodGet, "/api/showDish", app.showDishHandler)
 	router.HandlerFunc(http.MethodPost, "/api/dish", app.createDishHandler)
+	router.HandlerFunc(http.MethodGet, "/api/topDishes", app.getDishesHandler)
+
+	//comment
+	router.HandlerFunc(http.MethodPut, "/api/comment", app.createCommentHandler)
 
 	//user
 	router.HandlerFunc(http.MethodPost, "/api/user", app.registerUserHandler)
+
+	//order
+	router.HandlerFunc(http.MethodPost, "/api/order", app.createOrderHandler)
 
 	return router
 }

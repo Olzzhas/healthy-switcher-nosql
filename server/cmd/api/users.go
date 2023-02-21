@@ -48,3 +48,7 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 	fmt.Fprintf(w, userRes)
 
 }
+
+func (app *application) createOrderHandler(w http.ResponseWriter, r *http.Request) {
+	//dish_id := "63f3beb8e9053d73256db2c0"
+}
