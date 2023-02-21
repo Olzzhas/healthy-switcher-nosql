@@ -8,6 +8,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"log"
+	"server/internal/data/token"
 	"server/internal/data/user"
 )
 
@@ -153,6 +154,84 @@ func (d *db) CreateOrder(ctx context.Context, user user.User, order user.Order) 
 	fmt.Printf("Matched %d documents and Modified %d documents", result.MatchedCount, result.ModifiedCount)
 
 	return nil
+}
+
+func (d *db) UpdateForToken(ctx context.Context, user user.User, token token.Token) error {
+	objectID, err := primitive.ObjectIDFromHex(user.ID)
+	if err != nil {
+		return fmt.Errorf("(update)failed to convert user ID to ObjectID. Id=%s", user.ID)
+	}
+
+	filter := bson.M{"_id": objectID}
+
+	userBytes, err := bson.Marshal(user)
+	if err != nil {
+		return fmt.Errorf("failed to marshal user. error: %v", err)
+	}
+
+	var updateUserObj bson.M
+	err = bson.Unmarshal(userBytes, &updateUserObj)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal userbytes: %v", err)
+	}
+
+	delete(updateUserObj, "_id")
+
+	update := bson.D{{"$set", bson.D{{"activation_token", token}}}}
+
+	result, err := d.collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return fmt.Errorf("failed to execute update user query. error: %v", err)
+	}
+
+	if result.MatchedCount == 0 {
+		//TODO ErrEntityNotFound
+		return fmt.Errorf("not found")
+	}
+
+	fmt.Printf("Matched %d documents and Modified %d documents", result.MatchedCount, result.ModifiedCount)
+
+	return nil
+}
+
+func (d *db) FindOneByEmail(ctx context.Context, email string) (u user.User, err error) {
+	filter := bson.M{"email": email}
+
+	result := d.collection.FindOne(ctx, filter)
+
+	if result.Err() != nil {
+		if errors.Is(result.Err(), mongo.ErrNoDocuments) {
+			//TODO ErrEntityNotFound
+			return u, fmt.Errorf("ErrEntityNotFound")
+		}
+		return u, fmt.Errorf("failed to find one user by email: %s due to error: %v", email, err)
+	}
+
+	if err = result.Decode(&u); err != nil {
+		return u, fmt.Errorf("failed to decode user(email: %s) from db due to error: %v", email, err)
+	}
+
+	return u, nil
+}
+
+func (d *db) FindForActivation(ctx context.Context, activationToken string) (u user.User, err error) {
+	filter := bson.M{"activation_token.plaintext": activationToken}
+
+	result := d.collection.FindOne(ctx, filter)
+
+	if result.Err() != nil {
+		if errors.Is(result.Err(), mongo.ErrNoDocuments) {
+			//TODO ErrEntityNotFound
+			return u, fmt.Errorf("ErrEntityNotFound")
+		}
+		return u, fmt.Errorf("failed to find one user by activation token: %s due to error: %v", activationToken, err)
+	}
+
+	if err = result.Decode(&u); err != nil {
+		return u, fmt.Errorf("failed to decode user(activation token: %s) from db due to error: %v", activationToken, err)
+	}
+
+	return u, nil
 }
 
 func NewStorage(database *mongo.Database, collection string) user.Storage {

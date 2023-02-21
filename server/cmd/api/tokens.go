@@ -39,7 +39,7 @@ func (app *application) New(userID string, ttl time.Duration, scope string) (*to
 		return nil, err
 	}
 
-	storage := tokenDB.NewStorage(app.mongoClient, "tokens")
+	storage := tokenDB.NewStorage(app.mongoClient, "activation-tokens")
 
 	err = storage.Create(context.Background(), *token)
 	if err != nil {

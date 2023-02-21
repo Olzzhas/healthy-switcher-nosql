@@ -8,6 +8,7 @@ import (
 	mongodb "server/internal/client"
 	"server/internal/jsonlog"
 	"server/internal/mailer"
+	"sync"
 )
 
 var version = "1.0.0"
@@ -34,6 +35,7 @@ type application struct {
 	logger      *jsonlog.Logger
 	mongoClient *mongo.Database
 	mailer      mailer.Mailer
+	wg          sync.WaitGroup
 }
 
 func main() {

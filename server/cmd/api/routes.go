@@ -25,6 +25,7 @@ func (app *application) routes() http.Handler {
 
 	//user
 	router.HandlerFunc(http.MethodPost, "/api/user", app.registerUserHandler)
+	router.HandlerFunc(http.MethodPut, "/api/users/activated", app.activateUserHandler)
 
 	//order
 	router.HandlerFunc(http.MethodPost, "/api/order", app.createOrderHandler)
