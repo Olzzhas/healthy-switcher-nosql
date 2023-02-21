@@ -1,0 +1,97 @@
+.about-wrapper {
+  position: relative;
+  max-width: 1110px;
+  height: 736px;
+  background: #252525;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+  border-radius: 6px;
+  margin: 0 auto;
+  top: 164px;
+  margin-bottom: 140px;
+}
+
+h1 {
+  font-weight: 900;
+  font-size: 100px;
+  letter-spacing: 0.2em;
+  color: #303030;
+
+  position: absolute;
+  top: 110px;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  width: fit-content;
+}
+
+.spanAbout {
+  position: absolute;
+  font-weight: 400;
+  font-size: 30px;
+  letter-spacing: 0.2em;
+  color: #d9d9d9;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  width: fit-content;
+  top: 140px;
+}
+
+.lorem {
+  position: absolute;
+  font-weight: 300;
+  font-size: 16px;
+  line-height: 30px;
+  color: #a6a6a6;
+  max-width: 734px;
+  left: 0;
+  right: 0;
+  margin-left: auto;
+  margin-right: auto;
+  width: fit-content;
+  top: 226px;
+}
+
+.slider {
+  ul {
+    position: absolute;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+
+    left: 0;
+    right: 0;
+    margin-left: auto;
+    margin-right: auto;
+    width: fit-content;
+
+    top: 376px;
+    align-items: center;
+  }
+
+  li:last-child {
+    margin-right: 0;
+  }
+}
+
+.arrowButton {
+  transition: all 0.15s ease-in-out;
+  cursor: pointer;
+}
+
+.arrowButton:hover {
+  opacity: 0.75;
+}
+
+.dish {
+  opacity: 0.9;
+  transition: all 0.2s ease-in-out;
+  cursor: pointer;
+}
+
+.dish:hover {
+  transform: scale(108%);
+  opacity: 1;
+}

@@ -1,7 +1,6 @@
 package dish
 
 import (
-	"server/internal/data/user"
 	"server/internal/validator"
 	"time"
 )
@@ -16,10 +15,10 @@ type Dish struct {
 }
 
 type Comment struct {
-	ID          string    `json:"id" bson:"_id,omitempty"`
-	User        user.User `json:"user",bson:"user"`
-	CommentBody string    `json:"comment_body" bson:"comment_body"`
-	Rating      int64     `json:"rating" bson:"rating"`
+	ID          string `json:"id" bson:"_id,omitempty"`
+	UserID      string `json:"user_id",bson:"user_id"`
+	CommentBody string `json:"comment_body" bson:"comment_body"`
+	Rating      int64  `json:"rating" bson:"rating"`
 }
 
 func ValidateDish(v *validator.Validator, dish *Dish) {
