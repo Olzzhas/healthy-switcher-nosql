@@ -43,7 +43,7 @@ func (d *db) FindOne(ctx context.Context, id string) (dish dish.Dish, err error)
 	if result.Err() != nil {
 		if errors.Is(result.Err(), mongo.ErrNoDocuments) {
 			//TODO ErrEntityNotFound
-			return dish, fmt.Errorf("ErrEntityNotFound")
+			return dish, fmt.Errorf("ErrEntityNotFound (dish)")
 		}
 		return dish, fmt.Errorf("failed to find one dish by id: %s due to error: %v", id, err)
 	}

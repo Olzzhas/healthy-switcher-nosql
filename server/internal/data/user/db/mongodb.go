@@ -117,6 +117,44 @@ func (d *db) Delete(ctx context.Context, id string) error {
 	return nil
 }
 
+func (d *db) CreateOrder(ctx context.Context, user user.User, order user.Order) error {
+	objectID, err := primitive.ObjectIDFromHex(user.ID)
+	if err != nil {
+		return fmt.Errorf("failed to convert user ID to ObjectID. Id=%s", user.ID)
+	}
+
+	filter := bson.M{"_id": objectID}
+
+	userBytes, err := bson.Marshal(user)
+	if err != nil {
+		return fmt.Errorf("failed to marshal user. error: %v", err)
+	}
+
+	var updateUserObj bson.M
+	err = bson.Unmarshal(userBytes, &updateUserObj)
+	if err != nil {
+		return fmt.Errorf("failed to unmarshal userbytes: %v", err)
+	}
+
+	delete(updateUserObj, "_id")
+
+	update := bson.D{{"$push", bson.D{{"orders", order}}}}
+
+	result, err := d.collection.UpdateOne(ctx, filter, update)
+	if err != nil {
+		return fmt.Errorf("failed to execute update user query. error: %v", err)
+	}
+
+	if result.MatchedCount == 0 {
+		//TODO ErrEntityNotFound
+		return fmt.Errorf("not found")
+	}
+
+	fmt.Printf("Matched %d documents and Modified %d documents", result.MatchedCount, result.ModifiedCount)
+
+	return nil
+}
+
 func NewStorage(database *mongo.Database, collection string) user.Storage {
 
 	return &db{

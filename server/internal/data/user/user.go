@@ -13,17 +13,17 @@ type User struct {
 	CreatedAt time.Time `json:"created_at" bson:"created_at"`
 	Name      string    `json:"name" bson:"name"`
 	Email     string    `json:"email" bson:"email"`
-	Password  password  `json:"-" bson:"password"`
+	Password  password  `json:"-" bson:"-"`
 	Activated bool      `json:"activated" bson:"activated"`
 	Orders    []Order   `json:"orders"bson:"orders"`
 	Version   int       `json:"-" bson:"version"`
 }
 
-type CreatedUserDTO struct {
-	Name     string   `json:"name"`
-	Email    string   `json:"email"`
-	Password password `json:"password "`
-}
+//type CreatedUserDTO struct {
+//	Name     string   `json:"name"`
+//	Email    string   `json:"email"`
+//	Password password `json:"password "`
+//}
 
 type password struct {
 	plaintext *string

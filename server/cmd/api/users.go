@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"net/http"
+	dishDB "server/internal/data/dish/db"
 	"server/internal/data/user"
 	userDB "server/internal/data/user/db"
 	"server/internal/validator"
@@ -50,5 +52,34 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 }
 
 func (app *application) createOrderHandler(w http.ResponseWriter, r *http.Request) {
-	//dish_id := "63f3beb8e9053d73256db2c0"
+	var input struct {
+		dish_id string
+		user_id string
+	}
+
+	err := app.readJSON(w, r, &input)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	dishStorage := dishDB.NewStorage(app.mongoClient, "dishes")
+
+	dish, err := dishStorage.FindOne(r.Context(), input.dish_id)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	storage := userDB.NewStorage(app.mongoClient, "users")
+
+	candidate, err := storage.FindOne(r.Context(), input.user_id)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var order user.Order
+	order.Dish = dish
+
+	storage.CreateOrder(r.Context(), candidate, order)
+
 }
