@@ -3,13 +3,11 @@ package main
 import (
 	"context"
 	"flag"
-	"fmt"
 	"go.mongodb.org/mongo-driver/mongo"
-	"log"
-	"net/http"
 	"os"
 	mongodb "server/internal/client"
-	"time"
+	"server/internal/jsonlog"
+	"server/internal/mailer"
 )
 
 var version = "1.0.0"
@@ -17,12 +15,25 @@ var version = "1.0.0"
 type config struct {
 	port int
 	env  string
+	smtp struct {
+		host     string
+		port     int
+		username string
+		password string
+		sender   string
+	}
+	limiter struct {
+		rps     float64
+		burst   int
+		enabled bool
+	}
 }
 
 type application struct {
 	config      config
-	logger      *log.Logger
+	logger      *jsonlog.Logger
 	mongoClient *mongo.Database
+	mailer      mailer.Mailer
 }
 
 func main() {
@@ -30,9 +41,20 @@ func main() {
 
 	flag.IntVar(&cfg.port, "port", 4000, "API server port")
 	flag.StringVar(&cfg.env, "env", "development", "Environment (development|staging|production)")
+
+	flag.StringVar(&cfg.smtp.host, "smtp-host", "smtp.gmail.com", "SMTP host")
+	flag.IntVar(&cfg.smtp.port, "smtp-port", 465, "SMTP port")
+	flag.StringVar(&cfg.smtp.username, "smtp-username", "healthyswitcher@gmail.com", "SMTP username")
+	flag.StringVar(&cfg.smtp.password, "smtp-password", "zrlbtsggeqirgnlh", "SMTP password")
+	flag.StringVar(&cfg.smtp.sender, "smtp-sender", "Healty-Swithcher <no-reply@healthy-switcher.olzhas.net>", "SMTP sender")
+
+	flag.Float64Var(&cfg.limiter.rps, "limiter-rps", 2, "Rate limiter maximum requests per second")
+	flag.IntVar(&cfg.limiter.burst, "limiter-burst", 4, "Rate limiter maximum burst")
+	flag.BoolVar(&cfg.limiter.enabled, "limiter-enabled", true, "Enable rate limiter")
+
 	flag.Parse()
 
-	logger := log.New(os.Stdout, "", log.Ldate|log.Ltime)
+	logger := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
 
 	mongoDBClient, err := mongodb.NewClient(context.Background(), "user-service")
 	if err != nil {
@@ -43,18 +65,12 @@ func main() {
 		config:      cfg,
 		logger:      logger,
 		mongoClient: mongoDBClient,
+		mailer:      mailer.New(cfg.smtp.host, cfg.smtp.port, cfg.smtp.username, cfg.smtp.password, cfg.smtp.sender),
 	}
 
-	srv := &http.Server{
-		Addr:         fmt.Sprintf(":%d", cfg.port),
-		Handler:      app.routes(),
-		IdleTimeout:  time.Minute,
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 30 * time.Second,
+	err = app.serve()
+	if err != nil {
+		logger.PrintFatal(err, nil)
 	}
-
-	logger.Printf("starting %s server on %s", cfg.env, srv.Addr)
-	err = srv.ListenAndServe()
-	logger.Fatal(err)
 
 }

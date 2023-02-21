@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func (app *application) routes() *httprouter.Router {
+func (app *application) routes() http.Handler {
 	router := httprouter.New()
 
 	//router errors
@@ -29,5 +29,5 @@ func (app *application) routes() *httprouter.Router {
 	//order
 	router.HandlerFunc(http.MethodPost, "/api/order", app.createOrderHandler)
 
-	return router
+	return app.recoverPanic(app.rateLimit(router))
 }

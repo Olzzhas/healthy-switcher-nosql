@@ -49,6 +49,29 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 
 	fmt.Fprintf(w, userRes)
 
+	err = app.mailer.Send(candidate.Email, "user_welcome.tmpl", candidate)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+		return
+	}
+	err = app.writeJSON(w, http.StatusCreated, envelope{"user": candidate}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+
+	go func() {
+		err = app.mailer.Send(candidate.Email, "user_welcome.tmpl", candidate)
+		if err != nil {
+
+			app.logger.PrintError(err, nil)
+		}
+	}()
+
+	err = app.writeJSON(w, http.StatusAccepted, envelope{"user": candidate}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+
 }
 
 func (app *application) createOrderHandler(w http.ResponseWriter, r *http.Request) {
