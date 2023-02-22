@@ -2,28 +2,31 @@ package user
 
 import (
 	"errors"
+	"fmt"
 	"golang.org/x/crypto/bcrypt"
+	"log"
 	"server/internal/data/dish"
 	"server/internal/validator"
 	"time"
 )
+
+var (
+	ErrRecordNotFound = errors.New("record not found")
+)
+
+var AnonymousUser = &User{}
 
 type User struct {
 	ID        string    `json:"id"bson:"_id,omitempty"`
 	CreatedAt time.Time `json:"created_at" bson:"created_at"`
 	Name      string    `json:"name" bson:"name"`
 	Email     string    `json:"email" bson:"email"`
-	Password  password  `json:"-" bson:"-"`
+	Password  password  `json:"-" bson:"password"`
+	Hash      []byte    `json:"hash"bson:"hash"`
 	Activated bool      `json:"activated" bson:"activated"`
 	Orders    []Order   `json:"orders"bson:"orders"`
 	Version   int       `json:"-" bson:"version"`
 }
-
-//type CreatedUserDTO struct {
-//	Name     string   `json:"name"`
-//	Email    string   `json:"email"`
-//	Password password `json:"password "`
-//}
 
 type password struct {
 	plaintext *string
@@ -36,20 +39,21 @@ type Order struct {
 	CreatedAt time.Time `json:"created_at" bson:"created_at"`
 }
 
-func (p *password) Set(plaintextPassword string) error {
+func (p *password) Set(plaintextPassword string) ([]byte, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(plaintextPassword), 12)
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 
 	p.plaintext = &plaintextPassword
 	p.hash = hash
 
-	return nil
+	return hash, err
 }
 
-func (p *password) Matches(plaintextPassword string) (bool, error) {
-	err := bcrypt.CompareHashAndPassword(p.hash, []byte(plaintextPassword))
+func (p *password) Matches(plaintextPassword string, hash []byte) (bool, error) {
+	fmt.Println(hash)
+	err := bcrypt.CompareHashAndPassword(hash, []byte(plaintextPassword))
 
 	if err != nil {
 		switch {
@@ -82,7 +86,11 @@ func ValidateUser(v *validator.Validator, user *User) {
 		ValidatePasswordPlaintext(v, *user.Password.plaintext)
 	}
 
-	if user.Password.hash == nil {
+	if user.Hash == nil {
 		panic("missing password hash for user")
 	}
+}
+
+func (u *User) IsAnonymous() bool {
+	return u == AnonymousUser
 }

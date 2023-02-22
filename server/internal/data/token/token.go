@@ -6,15 +6,16 @@ import (
 )
 
 const (
-	ScopeActivation = "activation"
+	ScopeActivation     = "activation"
+	ScopeAuthentication = "authentication"
 )
 
 type Token struct {
-	Plaintext string    `json:"plaintext"bson:"plaintext"`
-	Hash      []byte    `json:"hash"bson:"hash"`
-	UserID    string    `json:"user_id"bson:"user_id"`
+	Plaintext string    `json:"token"bson:"token"`
+	Hash      []byte    `json:"-"bson:"-"`
+	UserID    string    `json:"-"bson:"user_id"`
 	Expiry    time.Time `json:"expiry"bson:"expiry"`
-	Scope     string    `json:"scope"bson:"scope"`
+	Scope     string    `json:"-"bson:"-"`
 }
 
 func ValidateTokenPlaintext(v *validator.Validator, tokenPlaintext string) {

@@ -156,7 +156,7 @@ func (d *db) CreateOrder(ctx context.Context, user user.User, order user.Order) 
 	return nil
 }
 
-func (d *db) UpdateForToken(ctx context.Context, user user.User, token token.Token) error {
+func (d *db) UpdateForToken(ctx context.Context, user user.User, token token.Token, scope string) error {
 	objectID, err := primitive.ObjectIDFromHex(user.ID)
 	if err != nil {
 		return fmt.Errorf("(update)failed to convert user ID to ObjectID. Id=%s", user.ID)
@@ -177,7 +177,7 @@ func (d *db) UpdateForToken(ctx context.Context, user user.User, token token.Tok
 
 	delete(updateUserObj, "_id")
 
-	update := bson.D{{"$set", bson.D{{"activation_token", token}}}}
+	update := bson.D{{"$set", bson.D{{scope, token}}}}
 
 	result, err := d.collection.UpdateOne(ctx, filter, update)
 	if err != nil {
@@ -215,7 +215,7 @@ func (d *db) FindOneByEmail(ctx context.Context, email string) (u user.User, err
 }
 
 func (d *db) FindForActivation(ctx context.Context, activationToken string) (u user.User, err error) {
-	filter := bson.M{"activation_token.plaintext": activationToken}
+	filter := bson.M{"activation.token": activationToken}
 
 	result := d.collection.FindOne(ctx, filter)
 
@@ -229,6 +229,26 @@ func (d *db) FindForActivation(ctx context.Context, activationToken string) (u u
 
 	if err = result.Decode(&u); err != nil {
 		return u, fmt.Errorf("failed to decode user(activation token: %s) from db due to error: %v", activationToken, err)
+	}
+
+	return u, nil
+}
+
+func (d *db) FindForAuthentication(ctx context.Context, authenticationToken string) (u user.User, err error) {
+	filter := bson.M{"authentication.token": authenticationToken}
+
+	result := d.collection.FindOne(ctx, filter)
+
+	if result.Err() != nil {
+		if errors.Is(result.Err(), mongo.ErrNoDocuments) {
+			//TODO ErrEntityNotFound
+			return u, fmt.Errorf("ErrEntityNotFound")
+		}
+		return u, fmt.Errorf("failed to find one user by authentication token: %s due to error: %v", authenticationToken, err)
+	}
+
+	if err = result.Decode(&u); err != nil {
+		return u, fmt.Errorf("failed to decode user(authentication token: %s) from db due to error: %v", authenticationToken, err)
 	}
 
 	return u, nil

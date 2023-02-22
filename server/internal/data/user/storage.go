@@ -12,7 +12,8 @@ type Storage interface {
 	Delete(ctx context.Context, id string) error
 
 	CreateOrder(ctx context.Context, user User, order Order) error
-	UpdateForToken(ctx context.Context, user User, token token.Token) error
+	UpdateForToken(ctx context.Context, user User, token token.Token, scope string) error
 	FindOneByEmail(ctx context.Context, email string) (User, error)
 	FindForActivation(ctx context.Context, activationToken string) (User, error)
+	FindForAuthentication(ctx context.Context, authenticationToken string) (u User, err error)
 }

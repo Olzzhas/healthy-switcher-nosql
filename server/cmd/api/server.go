@@ -12,9 +12,13 @@ import (
 )
 
 func (app *application) serve() error {
+	corsSettings := CorsSettings()
+
+	handler := corsSettings.Handler(app.routes())
+
 	srv := &http.Server{
 		Addr:         fmt.Sprintf(":%d", app.config.port),
-		Handler:      app.routes(),
+		Handler:      handler,
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,

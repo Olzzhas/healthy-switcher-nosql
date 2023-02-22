@@ -21,14 +21,15 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(http.MethodGet, "/api/topDishes", app.getDishesHandler)
 
 	//comment
-	router.HandlerFunc(http.MethodPut, "/api/comment", app.createCommentHandler)
+	router.HandlerFunc(http.MethodPut, "/api/comment", app.requireActivatedUser(app.createCommentHandler))
 
 	//user
 	router.HandlerFunc(http.MethodPost, "/api/user", app.registerUserHandler)
 	router.HandlerFunc(http.MethodPut, "/api/users/activated", app.activateUserHandler)
+	router.HandlerFunc(http.MethodPost, "/api/tokens/authentication", app.createAuthenticationTokenHandler)
 
 	//order
-	router.HandlerFunc(http.MethodPost, "/api/order", app.createOrderHandler)
+	router.HandlerFunc(http.MethodPost, "/api/order", app.requireActivatedUser(app.createOrderHandler))
 
-	return app.recoverPanic(app.rateLimit(router))
+	return app.recoverPanic(app.rateLimit(app.authenticate(router)))
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"net/http"
 	dishDB "server/internal/data/dish/db"
@@ -29,13 +28,21 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 	candidate := &user.User{
 		Name:      input.Name,
 		Email:     input.Email,
+		Hash:      nil,
 		Activated: false,
 	}
 
-	err = candidate.Password.Set(input.Password)
+	passHash, err := candidate.Password.Set(input.Password)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
+	}
+
+	candidate = &user.User{
+		Name:      input.Name,
+		Email:     input.Email,
+		Hash:      passHash,
+		Activated: false,
 	}
 
 	v := validator.New()
@@ -52,21 +59,23 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		log.Fatal(err)
 	}
 
+	app.writeJSON(w, http.StatusOK, envelope{"userRes": userRes}, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	token, err := app.New(candidate.ID, 3*24*time.Hour, token.ScopeActivation)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
-	fmt.Println(candidate.ID)
-	fmt.Fprintln(w, userRes)
-	//fmt.Fprintln(w, token)
 
 	candidateForToken, err := storage.FindOneByEmail(context.Background(), candidate.Email)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = storage.UpdateForToken(context.Background(), candidateForToken, *token)
+	err = storage.UpdateForToken(context.Background(), candidateForToken, *token, "activation")
 	if err != nil {
 		log.Fatal(err)
 	}
