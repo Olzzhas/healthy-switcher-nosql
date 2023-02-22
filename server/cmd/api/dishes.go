@@ -46,11 +46,16 @@ func (app *application) createDishHandler(w http.ResponseWriter, r *http.Request
 		return
 	}
 
+	var comments []dish.Comment
+	var comment dish.Comment
+	comments = append(comments, comment)
+
 	item := &dish.Dish{
 		Title:       input.Title,
 		Img:         input.Img,
 		Price:       input.Price,
 		Description: input.Description,
+		Comments:    comments,
 	}
 
 	v := validator.New()
@@ -84,10 +89,10 @@ func (app *application) getDishesHandler(w http.ResponseWriter, r *http.Request)
 
 func (app *application) createCommentHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		dish_id      string
-		user_id      string
-		comment_body string
-		rating       int64
+		DishId      string `json:"dish_id"bson:"dish_id"`
+		UserId      string `json:"user_id"bson:"user_id"`
+		CommentBody string `json:"comment_body"bson:"comment_body"`
+		Rating      int64  `json:"rating"bson:"rating"`
 	}
 
 	err := app.readJSON(w, r, &input)
@@ -98,16 +103,16 @@ func (app *application) createCommentHandler(w http.ResponseWriter, r *http.Requ
 
 	storage := dishDb.NewStorage(app.mongoClient, "dishes")
 
-	dishRes, err := storage.FindOne(context.Background(), input.dish_id)
+	dishRes, err := storage.FindOne(context.Background(), input.DishId)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	var comment dish.Comment
 
-	comment.UserID = input.user_id
-	comment.CommentBody = input.comment_body
-	comment.Rating = input.rating
+	comment.UserID = input.UserId
+	comment.CommentBody = input.CommentBody
+	comment.Rating = input.Rating
 
 	err = storage.CreateComment(r.Context(), dishRes, comment)
 	if err != nil {
