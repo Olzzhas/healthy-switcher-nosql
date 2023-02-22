@@ -1,5 +1,5 @@
 import './card.scss';
-function Card({ title, imgUrl, description, rating }) {
+function Card({ title, imgUrl, description, rating, id }) {
   const ratings = document.querySelectorAll('.rating');
   if (ratings.length > 0) {
     initRatings();
@@ -28,6 +28,16 @@ function Card({ title, imgUrl, description, rating }) {
       const setRatingActiveWidth = index / 0.05;
       ratingActive.style.width = `${setRatingActiveWidth}%`;
     }
+  }
+
+  function openCardHandler(){
+    window.location.assign("http://localhost:3000/dish")
+    localStorage.setItem("cardId", id)
+    localStorage.setItem("cardTitle", title)
+    localStorage.setItem("cardImg", imgUrl)
+    localStorage.setItem("cardDescription", description)
+    localStorage.setItem("cardRating", rating)
+    localStorage.setItem("cardPrice", 2790)
   }
   return (
     <div className="card">
@@ -62,7 +72,7 @@ function Card({ title, imgUrl, description, rating }) {
           </div>
           <div className="rating__value">{rating}</div>
         </div>
-        <div className="order-button">
+        <div onClick={()=>{openCardHandler()}} className="order-button">
           <span>ORDER</span>
         </div>
       </div>

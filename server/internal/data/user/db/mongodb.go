@@ -142,6 +142,7 @@ func (d *db) CreateOrder(ctx context.Context, user user.User, order user.Order) 
 	update := bson.D{{"$push", bson.D{{"orders", order}}}}
 
 	result, err := d.collection.UpdateOne(ctx, filter, update)
+
 	if err != nil {
 		return fmt.Errorf("failed to execute update user query. error: %v", err)
 	}
@@ -152,7 +153,6 @@ func (d *db) CreateOrder(ctx context.Context, user user.User, order user.Order) 
 	}
 
 	fmt.Printf("Matched %d documents and Modified %d documents", result.MatchedCount, result.ModifiedCount)
-
 	return nil
 }
 

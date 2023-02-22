@@ -30,7 +30,7 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(http.MethodPost, "/api/tokens/authentication", app.createAuthenticationTokenHandler)
 
 	//order
-	router.HandlerFunc(http.MethodPost, "/api/order", app.requireActivatedUser(app.createOrderHandler))
+	router.HandlerFunc(http.MethodPost, "/api/order", app.requireAuthenticatedUser(app.createOrderHandler))
 
 	return app.recoverPanic(app.rateLimit(app.authenticate(router)))
 }

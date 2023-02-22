@@ -122,6 +122,7 @@ function Main({ dishes }) {
       <div className="dishBlock">
         {dishes.map((dish) => (
           <Card
+            id={dish.id}
             title={dish.title}
             imgUrl={dish.img}
             description={dish.description}

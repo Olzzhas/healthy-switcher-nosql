@@ -2,14 +2,19 @@ import React, { useContext } from 'react';
 import { UserContext } from '../../UserContext';
 import './navbar.scss';
 function Navbar() {
-  const user = useContext(UserContext)
-  let username = "" 
-  if(user !== ""){
-    
-    // console.log("user is equal to " + user);
-    username = user.name
-    // console.log("username is equal to " + username);
-  }
+
+
+  // let user = useContext(UserContext)
+  // let username
+  // if(localStorage.getItem("accessToken") !== "" ){
+
+  //   // user = JSON.parse(user)
+  //   username  = user.name
+  // }
+
+  const {user, setUser} =  useContext(UserContext)
+  let username = user.name
+  
 
   return (
     <div>

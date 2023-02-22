@@ -13,12 +13,11 @@ function Register() {
   async function registerUser(event) {
     event.preventDefault();
 
-    axios.post("http://localhost:5000/api/registration",{
-        first_name: firstName,
-        last_name: lastName,
+    axios.post("http://localhost:4000/api/user",{
+        name: firstName,
         email: email,
         password: password,
-        repassword: repassword,
+
     },)
     .then(res=>{
         console.log(res.data);

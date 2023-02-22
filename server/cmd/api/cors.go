@@ -12,11 +12,13 @@ func CorsSettings() *cors.Cors {
 		},
 		AllowedOrigins: []string{
 			"http://localhost:3000",
+			"http://localhost:4000",
 		},
 		AllowCredentials: true,
 		AllowedHeaders: []string{
 			"Access-Control-Allow-Origin",
 			"Content-Type",
+			"Authorization",
 		},
 		OptionsPassthrough: true,
 		ExposedHeaders: []string{

@@ -17,6 +17,7 @@ import { UserContext } from './UserContext';
 function App() {
   const [dishes, setDishes] = React.useState([]);
   const [token, setToken] = React.useState(localStorage.getItem('accessToken'))
+  const [user, setUser] = React.useState({})
 
   // let checkAuth
   // if(localStorage.getItem("currentUser") === ""){
@@ -42,10 +43,12 @@ function App() {
             })
           ])
           
-          // console.log(userResponse.data.user);
-          // localStorage.setItem("currentUser", JSON.stringify(userResponse.data.user))
-          // let test = JSON.parse(localStorage.getItem("currentUser"))
-          // console.log(test);
+          console.log(userResponse.data.user);
+          localStorage.setItem("currentUser", JSON.stringify(userResponse.data.user))
+          setUser(userResponse.data.user)
+
+          let test = JSON.parse(localStorage.getItem("currentUser"))
+          console.log(test);
         }
       } catch (error) {
         throw error
@@ -76,13 +79,14 @@ function App() {
 
   function testToken(){
     console.log(localStorage.getItem("accessToken"));
-    console.log(localStorage.getItem("currentUser"));
+    console.log(JSON.parse(localStorage.getItem("currentUser")));
     // console.log(authorized);
   }
 
 
   return (
-    <UserContext.Provider value={JSON.parse(localStorage.getItem("currentUser"))}>
+    // <UserContext.Provider value={localStorage.getItem("currentUser")}>
+    <UserContext.Provider value={{user, setUser}}>
       <div className="wrapper">
         <Navbar token={token} />
         <button onClick={()=>testToken()}>test token</button>

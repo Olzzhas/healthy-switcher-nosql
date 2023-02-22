@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	dish2 "server/internal/data/dish"
 	dishDB "server/internal/data/dish/db"
 	"server/internal/data/token"
 	"server/internal/data/user"
@@ -26,9 +27,16 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
+	var orders []user.Order
+	var order user.Order
+	var dish dish2.Dish
+	order.Dish = dish
+	orders = append(orders, order)
+
 	candidate := &user.User{
 		Name:      input.Name,
 		Email:     input.Email,
+		Orders:    orders,
 		Hash:      nil,
 		Activated: false,
 	}
@@ -43,6 +51,7 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 		Name:      input.Name,
 		Email:     input.Email,
 		Hash:      passHash,
+		Orders:    orders,
 		Activated: false,
 	}
 
@@ -80,28 +89,28 @@ func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Reque
 	if err != nil {
 		log.Fatal(err)
 	}
-	//app.background(func() {
-	//
-	//	data := map[string]any{
-	//		"activationToken": token.Plaintext,
-	//		"userID":          candidate.ID,
-	//	}
-	//	err = app.mailer.Send(candidate.Email, "user_welcome.tmpl", data)
-	//	if err != nil {
-	//		app.logger.PrintError(err, nil)
-	//	}
-	//})
-	//err = app.writeJSON(w, http.StatusAccepted, envelope{"user": candidate}, nil)
-	//if err != nil {
-	//	app.serverErrorResponse(w, r, err)
-	//}
+	app.background(func() {
+
+		data := map[string]any{
+			"activationToken": token.Plaintext,
+			"userID":          candidate.ID,
+		}
+		err = app.mailer.Send(candidate.Email, "user_welcome.tmpl", data)
+		if err != nil {
+			app.logger.PrintError(err, nil)
+		}
+	})
+	err = app.writeJSON(w, http.StatusAccepted, envelope{"user": candidate}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
 
 }
 
 func (app *application) createOrderHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		dish_id string
-		user_id string
+		DishID string `json:"dish_id"`
+		UserID string `json:"user_id"`
 	}
 
 	err := app.readJSON(w, r, &input)
@@ -112,14 +121,14 @@ func (app *application) createOrderHandler(w http.ResponseWriter, r *http.Reques
 
 	dishStorage := dishDB.NewStorage(app.mongoClient, "dishes")
 
-	dish, err := dishStorage.FindOne(r.Context(), input.dish_id)
+	dish, err := dishStorage.FindOne(r.Context(), input.DishID)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Errorf("dish not found: %v", err)
 	}
 
 	storage := userDB.NewStorage(app.mongoClient, "users")
 
-	candidate, err := storage.FindOne(r.Context(), input.user_id)
+	candidate, err := storage.FindOne(r.Context(), input.UserID)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -127,7 +136,10 @@ func (app *application) createOrderHandler(w http.ResponseWriter, r *http.Reques
 	var order user.Order
 	order.Dish = dish
 
-	storage.CreateOrder(r.Context(), candidate, order)
+	err = storage.CreateOrder(r.Context(), candidate, order)
+	if err != nil {
+		fmt.Errorf("ошибка при оформления заказа: %v", err)
+	}
 
 }
 
