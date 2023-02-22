@@ -1,0 +1,62 @@
+.dish-wrapper{
+    margin: auto;
+    width: 1600px;
+}
+
+.dish-info-block{
+    display: flex;
+    justify-content: space-between;
+
+    
+}
+
+.dish-img-block{
+
+    width: 500px;
+    height: 400px;
+
+    background: #252525;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+    border-radius: 6px;
+
+    overflow: hidden;
+    img{
+        width: 500px;
+        height: 400px;  
+        object-fit: cover;
+    }
+}
+
+
+.dish-info-properties{
+    display: flex;
+    flex-direction: column;
+    width: 800px;
+    height: 400px;
+    background-color: #252525;
+
+    h3{
+        font-family: 'Helvetica Neue';
+        font-style: normal;
+        font-weight: 400;
+        font-size: 32px;
+        line-height: 30px;
+        /* identical to box height, or 94% */
+
+
+        color: #D9D9D9;
+        margin-bottom: 20px;
+    }
+
+    p{
+        font-family: 'Helvetica Neue';
+        font-style: normal;
+        font-weight: 400;
+        font-size: 16px;
+ 
+        color: #FFFFFF;
+        margin-bottom: 5px;
+        
+    }
+    
+}

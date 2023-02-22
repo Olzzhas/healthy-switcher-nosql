@@ -58,7 +58,7 @@ func main() {
 
 	logger := jsonlog.New(os.Stdout, jsonlog.LevelInfo)
 
-	mongoDBClient, err := mongodb.NewClient(context.Background(), "user-service")
+	mongoDBClient, err := mongodb.NewClient(context.Background(), "healthy-switcher")
 	if err != nil {
 		panic(err)
 	}

@@ -35,6 +35,8 @@ func (app *application) showDishHandler(w http.ResponseWriter, r *http.Request) 
 func (app *application) createDishHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
 		Title       string `json:"title"`
+		Img         string `json:"img"`
+		Price       int64  `json:"price"`
 		Description string `json:"description"`
 	}
 
@@ -46,6 +48,8 @@ func (app *application) createDishHandler(w http.ResponseWriter, r *http.Request
 
 	item := &dish.Dish{
 		Title:       input.Title,
+		Img:         input.Img,
+		Price:       input.Price,
 		Description: input.Description,
 	}
 

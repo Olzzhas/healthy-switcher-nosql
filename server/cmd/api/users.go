@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"net/http"
 	dishDB "server/internal/data/dish/db"
@@ -158,6 +159,37 @@ func (app *application) activateUserHandler(w http.ResponseWriter, r *http.Reque
 	err = storage.Update(context.Background(), user)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	//TODO delete activation token from user document
+
+	err = app.writeJSON(w, http.StatusOK, envelope{"user": user}, nil)
+	if err != nil {
+		app.serverErrorResponse(w, r, err)
+	}
+}
+
+func (app *application) findByTokenHandler(w http.ResponseWriter, r *http.Request) {
+	var input struct {
+		TokenPlaintext string `json:"token"`
+	}
+	err := app.readJSON(w, r, &input)
+	if err != nil {
+		app.badRequestResponse(w, r, err)
+		return
+	}
+
+	v := validator.New()
+	if token.ValidateTokenPlaintext(v, input.TokenPlaintext); !v.Valid() {
+		app.failedValidationResponse(w, r, v.Errors)
+		return
+	}
+
+	storage := userDB.NewStorage(app.mongoClient, "users")
+
+	user, err := storage.FindForAuthentication(context.Background(), input.TokenPlaintext)
+	if err != nil {
+		fmt.Errorf("Ошибка при поиска пользователя по токену: %v", err)
 	}
 
 	//TODO delete activation token from user document

@@ -13,7 +13,7 @@ func (app *application) routes() http.Handler {
 	router.MethodNotAllowed = http.HandlerFunc(app.methodNotAllowedResponse)
 
 	//test
-	router.HandlerFunc(http.MethodGet, "/api/healthcheck", app.healthcheckHandler)
+	router.HandlerFunc(http.MethodGet, "/api/healthcheck", app.requireAuthenticatedUser(app.healthcheckHandler))
 
 	//dish
 	router.HandlerFunc(http.MethodGet, "/api/showDish", app.showDishHandler)
@@ -25,6 +25,7 @@ func (app *application) routes() http.Handler {
 
 	//user
 	router.HandlerFunc(http.MethodPost, "/api/user", app.registerUserHandler)
+	router.HandlerFunc(http.MethodPost, "/api/user/byToken", app.findByTokenHandler)
 	router.HandlerFunc(http.MethodPut, "/api/users/activated", app.activateUserHandler)
 	router.HandlerFunc(http.MethodPost, "/api/tokens/authentication", app.createAuthenticationTokenHandler)
 

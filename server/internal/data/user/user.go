@@ -2,7 +2,6 @@ package user
 
 import (
 	"errors"
-	"fmt"
 	"golang.org/x/crypto/bcrypt"
 	"log"
 	"server/internal/data/dish"
@@ -52,7 +51,6 @@ func (p *password) Set(plaintextPassword string) ([]byte, error) {
 }
 
 func (p *password) Matches(plaintextPassword string, hash []byte) (bool, error) {
-	fmt.Println(hash)
 	err := bcrypt.CompareHashAndPassword(hash, []byte(plaintextPassword))
 
 	if err != nil {

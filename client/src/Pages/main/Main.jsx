@@ -1,5 +1,5 @@
-import About from '../Components/About/About';
-import Card from '../Components/Card/Card';
+import About from '../../Components/About/About';
+import Card from '../../Components/Card/Card';
 import './main.scss';
 function Main({ dishes }) {
   return (
@@ -123,7 +123,7 @@ function Main({ dishes }) {
         {dishes.map((dish) => (
           <Card
             title={dish.title}
-            imgUrl={dish.imgUrl}
+            imgUrl={dish.img}
             description={dish.description}
             rating={dish.rating}
           />
